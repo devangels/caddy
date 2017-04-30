@@ -21,6 +21,8 @@ import (
 
 	"github.com/mholt/caddy/caddytls"
 	// This is where other plugins get plugged in (imported)
+	
+	_ "github.com/slightfoot/caddy-uwsgi"
 )
 
 func init() {
