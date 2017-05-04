@@ -149,10 +149,6 @@ func (u *staticUpstream) From() string {
 }
 
 func (u *staticUpstream) NewHost(host string) (*UpstreamHost, error) {
-	/*if !strings.HasPrefix(host, "http") &&
-		!strings.HasPrefix(host, "unix:") {
-		host = "http://" + host
-	}*/
 	uh := &UpstreamHost{
 		Name:              host,
 		Conns:             0,
@@ -190,6 +186,7 @@ func (u *staticUpstream) NewHost(host string) (*UpstreamHost, error) {
 }
 
 func parseUpstream(u string) ([]string, error) {
+	hosts := []string{u}
 	if !strings.HasPrefix(u, "unix:") {
 		colonIdx := strings.LastIndex(u, ":")
 		protoIdx := strings.Index(u, "://")
@@ -219,17 +216,23 @@ func parseUpstream(u string) ([]string, error) {
 				if pEnd <= pIni {
 					return nil, fmt.Errorf("port range [%s] is invalid", ports)
 				}
-
 				hosts := []string{}
 				for p := pIni; p <= pEnd; p++ {
 					hosts = append(hosts, fmt.Sprintf("%s:%d%s", us, p, ue))
 				}
-				return hosts, nil
 			}
 		}
 	}
 
-	return []string{u}, nil
+
+	for host := range hosts {
+		url, err := url.Parse(host)
+		if url.Scheme == "" {
+			host = "http://" + host
+		}
+	}
+
+	return hosts, nil
 
 }
 

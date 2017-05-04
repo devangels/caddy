@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/mholt/caddy/caddytls"
+	"net/http"
 )
 
 // SiteConfig contains information about a site
@@ -27,6 +28,9 @@ type SiteConfig struct {
 
 	// listener middleware stack
 	listenerMiddleware []ListenerMiddleware
+
+	// Protocol handlers
+	protocolHandlers map[string]http.RoundTripper
 
 	// Directory from which to serve files
 	Root string
@@ -98,6 +102,14 @@ func (s *SiteConfig) AddListenerMiddleware(l ListenerMiddleware) {
 	s.listenerMiddleware = append(s.listenerMiddleware, l)
 }
 
+// AddProtocolHandler adds a protocol handler to the list of a sites registered protocols
+func (s *SiteConfig) AddProtocolHandler(name string, handler http.RoundTripper) {
+	if s.protocolHandlers == nil {
+		s.protocolHandlers = make(map[string]http.RoundTripper)
+	}
+	s.protocolHandlers[name] = handler
+}
+
 // TLSConfig returns s.TLS.
 func (s SiteConfig) TLSConfig() *caddytls.Config {
 	return s.TLS
@@ -121,4 +133,9 @@ func (s SiteConfig) Middleware() []Middleware {
 // ListenerMiddleware returns s.listenerMiddleware
 func (s SiteConfig) ListenerMiddleware() []ListenerMiddleware {
 	return s.listenerMiddleware
+}
+
+// ProtocolHandlers returns s.protocolHandlers
+func (s SiteConfig) ProtocolHandlers() map[string]http.RoundTripper {
+	return s.protocolHandlers
 }
